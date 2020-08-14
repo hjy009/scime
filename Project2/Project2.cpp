@@ -132,6 +132,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    PAINTSTRUCT ps;
+    HDC hdc;
+    RECT rc;
+    POINT aptStar[6] = { 50,2, 2,98, 98,33, 2,33, 98,98, 50,2 };
+    POINT aptTriangle[4] = { 50,2, 98,86,  2,86, 50,2 },
+        aptRectangle[5] = { 2,2, 98,2,  98,98,  2,98, 2,2 },
+        aptPentagon[6] = { 50,2, 98,35, 79,90, 21,90, 2,35, 50,2 },
+        aptHexagon[7] = { 50,2, 93,25, 93,75, 50,98, 7,75, 7,25, 50,2 };
+
     switch (message)
     {
     case WM_INITDIALOG:
@@ -168,9 +177,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: 在此处添加使用 hdc 的任何绘图代码...
 
-            hdc->Rectangle(CRect(0, 0, 100, 100));
+            // All painting occurs here, between BeginPaint and EndPaint.
+            FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+ /*
+            GetClientRect(hWnd, &rc);
+            SetMapMode(hdc, MM_ANISOTROPIC);
+            SetWindowExtEx(hdc, 100, 100, NULL);
+            SetViewportExtEx(hdc, rc.right, rc.bottom, NULL);
+            Polyline(hdc, aptStar, 6);
+            
+//            TextOutA(hdc, 0, 0, "Hello, Windows!", 15);
+//            TextOut(hdc, 0, 0, L"Hello, Windows!", 15);
+*/
 
+            SetRect(&rc, 0, 0, 100, 100);
 
+            if (RectVisible(hdc, &rc))
+                Polyline(hdc, aptTriangle, 4);
+
+            SetViewportOrgEx(hdc, 100, 0, NULL);
+            if (RectVisible(hdc, &rc))
+                Polyline(hdc, aptRectangle, 5);
+
+            SetViewportOrgEx(hdc, 0, 100, NULL);
+            if (RectVisible(hdc, &rc))
+                Polyline(hdc, aptPentagon, 6);
+
+            SetViewportOrgEx(hdc, 100, 100, NULL);
+            if (RectVisible(hdc, &rc))
+                Polyline(hdc, aptHexagon, 7);
 
             EndPaint(hWnd, &ps);
         }
