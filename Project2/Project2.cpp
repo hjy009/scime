@@ -167,6 +167,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: 在此处添加使用 hdc 的任何绘图代码...
+
+            hdc->Rectangle(CRect(0, 0, 100, 100));
+
+
+
             EndPaint(hWnd, &ps);
         }
         break;
