@@ -12,6 +12,11 @@ WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
 HWND hWnd;
 
+
+BOOL fDraw = FALSE;
+POINT ptPrevious;
+
+
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -136,10 +141,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     HDC hdc;
     RECT rc;
     POINT aptStar[6] = { 50,2, 2,98, 98,33, 2,33, 98,98, 50,2 };
+
     POINT aptTriangle[4] = { 50,2, 98,86,  2,86, 50,2 },
         aptRectangle[5] = { 2,2, 98,2,  98,98,  2,98, 2,2 },
         aptPentagon[6] = { 50,2, 98,35, 79,90, 21,90, 2,35, 50,2 },
         aptHexagon[7] = { 50,2, 93,25, 93,75, 50,98, 7,75, 7,25, 50,2 };
+
 
     switch (message)
     {
@@ -171,6 +178,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case WM_LBUTTONDOWN:
+        fDraw = TRUE;
+        ptPrevious.x = LOWORD(lParam);
+        ptPrevious.y = HIWORD(lParam);
+        return 0L;
+    case WM_LBUTTONUP:
+        if (fDraw)
+        {
+            hdc = GetDC(hWnd);
+            MoveToEx(hdc, ptPrevious.x, ptPrevious.y, NULL);
+            LineTo(hdc, LOWORD(lParam), HIWORD(lParam));
+            ReleaseDC(hWnd, hdc);
+        }
+        fDraw = FALSE;
+        return 0L;
+
+    case WM_MOUSEMOVE:
+        if (fDraw)
+        {
+            hdc = GetDC(hWnd);
+            MoveToEx(hdc, ptPrevious.x, ptPrevious.y, NULL);
+            LineTo(hdc, ptPrevious.x = LOWORD(lParam),
+                ptPrevious.y = HIWORD(lParam));
+            ReleaseDC(hWnd, hdc);
+        }
+    return 0L; 
+
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
