@@ -1,8 +1,8 @@
-﻿// Project2.cpp : 定义应用程序的入口点。
+﻿// WindowsProject1.cpp : 定义应用程序的入口点。
 //
 
 #include "framework.h"
-#include "Project2.h"
+#include "WindowsProject1.h"
 
 #define MAX_LOADSTRING 100
 
@@ -10,7 +10,6 @@
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
-HWND hWnd;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -30,7 +29,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // 初始化全局字符串
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_PROJECT2, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_WINDOWSPROJECT1, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // 执行应用程序初始化:
@@ -39,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_PROJECT2));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINDOWSPROJECT1));
 
     MSG msg;
 
@@ -74,10 +73,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PROJECT2));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSPROJECT1));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_PROJECT2);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WINDOWSPROJECT1);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -97,10 +96,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 将实例句柄存储在全局变量中
-   //HWND hWnd;
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
+   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   
    if (!hWnd)
    {
       return FALSE;
@@ -112,7 +111,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
 
    // Make this window 70% alpha
-   SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA);
+   SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA); 
+   
+   //LONG styleValue = ::GetWindowLong(hWnd, GWL_EXSTYLE);
+   //styleValue |= WS_EX_LAYERED;
+   //SetWindowLong(hWnd, GWL_EXSTYLE, styleValue);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -134,17 +137,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    case WM_INITDIALOG:
-        {
-            // Set WS_EX_LAYERED on this window 
-            SetWindowLong(hWnd,
-                GWL_EXSTYLE,
-                GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-            // Make this window 70% alpha
-            SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA);         
-        }
-        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -157,6 +149,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case IDM_EXIT:
                 DestroyWindow(hWnd);
                 break;
+            case IDM_item:
+            {
+                LONG styleValue = ::GetWindowLong(hWnd, GWL_EXSTYLE);
+                styleValue |= WS_EX_LAYERED;
+                SetWindowLong(hWnd, GWL_EXSTYLE, styleValue);
+                break;
+            }
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
