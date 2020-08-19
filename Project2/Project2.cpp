@@ -16,6 +16,22 @@ HWND hWnd;
 BOOL fDraw = FALSE;
 POINT ptPrevious;
 
+HDC hdc;                 // device context (DC) for window  
+RECT rcTmp;              // temporary rectangle  
+PAINTSTRUCT ps;          // paint data for BeginPaint and EndPaint  
+POINT ptClientUL;        // client area upper left corner  
+POINT ptClientLR;        // client area lower right corner  
+static HDC hdcCompat;    // DC for copying bitmap  
+static POINT pt;         // x and y coordinates of cursor  
+static RECT rcBmp;       // rectangle that encloses bitmap  
+static RECT rcTarget;    // rectangle to receive bitmap  
+static RECT rcClient;    // client-area rectangle  
+static BOOL fDragRect;   // TRUE if bitmap rect. is dragged  
+static HBITMAP hbmp;     // handle of bitmap to display  
+static HBRUSH hbrBkgnd;  // handle of background-color brush  
+static COLORREF crBkgnd; // color of client-area background  
+static HPEN hpenDot;     // handle of dotted pen  
+
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -119,6 +135,42 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    // Make this window 70% alpha
    SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA);
 
+/*
+
+   // Load the bitmap resource.  
+
+   hbmp = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FLOATINGIMAGE));
+
+   // Create a device context (DC) to hold the bitmap.  
+   // The bitmap is copied from this DC to the window's DC  
+   // whenever it must be drawn.  
+
+   hdc = GetDC(hWnd);
+   hdcCompat = CreateCompatibleDC(hdc);
+   SelectObject(hdcCompat, hbmp);
+
+   // Create a brush of the same color as the background  
+   // of the client area. The brush is used later to erase  
+   // the old bitmap before copying the bitmap into the  
+   // target rectangle.  
+
+   crBkgnd = GetBkColor(hdc);
+   hbrBkgnd = CreateSolidBrush(crBkgnd);
+   ReleaseDC(hWnd, hdc);
+
+   // Create a dotted pen. The pen is used to draw the  
+   // bitmap rectangle as the user drags it.  
+
+   hpenDot = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
+
+   // Set the initial rectangle for the bitmap. Note that  
+   // this application supports only a 32- by 32-pixel  
+   // bitmap. The rectangle is slightly larger than the  
+   // bitmap.  
+
+   SetRect(&rcBmp, 1, 1, 177, 137);
+*/
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
@@ -150,6 +202,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     switch (message)
     {
+    case WM_CREATE:
+
+        // Load the bitmap resource.  
+
+        hbmp = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FLOATINGIMAGE));
+
+        // Create a device context (DC) to hold the bitmap.  
+        // The bitmap is copied from this DC to the window's DC  
+        // whenever it must be drawn.  
+
+        hdc = GetDC(hWnd);
+        hdcCompat = CreateCompatibleDC(hdc);
+        SelectObject(hdcCompat, hbmp);
+
+        // Create a brush of the same color as the background  
+        // of the client area. The brush is used later to erase  
+        // the old bitmap before copying the bitmap into the  
+        // target rectangle.  
+
+        crBkgnd = GetBkColor(hdc);
+        hbrBkgnd = CreateSolidBrush(crBkgnd);
+        ReleaseDC(hWnd, hdc);
+
+        // Create a dotted pen. The pen is used to draw the  
+        // bitmap rectangle as the user drags it.  
+
+        hpenDot = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
+
+        // Set the initial rectangle for the bitmap. Note that  
+        // this application supports only a 32- by 32-pixel  
+        // bitmap. The rectangle is slightly larger than the  
+        // bitmap.  
+
+        SetRect(&rcBmp, 1, 1, 177, 137);
+        return 0;
     case WM_INITDIALOG:
         {
             // Set WS_EX_LAYERED on this window 
@@ -211,8 +298,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: 在此处添加使用 hdc 的任何绘图代码...
 
+            Rectangle(ps.hdc, rcBmp.left, rcBmp.top,
+                rcBmp.right, rcBmp.bottom);
+            StretchBlt(ps.hdc, rcBmp.left + 1, rcBmp.top + 1,
+                (rcBmp.right - rcBmp.left) - 2,
+                (rcBmp.bottom - rcBmp.top) - 2, hdcCompat,
+                0, 0, 177, 137, SRCCOPY);
+
             // All painting occurs here, between BeginPaint and EndPaint.
-            FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+//            FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
  /*
             GetClientRect(hWnd, &rc);
             SetMapMode(hdc, MM_ANISOTROPIC);
@@ -223,7 +317,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 //            TextOutA(hdc, 0, 0, "Hello, Windows!", 15);
 //            TextOut(hdc, 0, 0, L"Hello, Windows!", 15);
 */
-
+/* 
             SetRect(&rc, 0, 0, 100, 100);
 
             if (RectVisible(hdc, &rc))
@@ -240,7 +334,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             SetViewportOrgEx(hdc, 100, 100, NULL);
             if (RectVisible(hdc, &rc))
                 Polyline(hdc, aptHexagon, 7);
-
+*/
             EndPaint(hWnd, &ps);
         }
         break;

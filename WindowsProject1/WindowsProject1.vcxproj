@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{3066c70c-2b49-4b69-ad83-7527a159163e}</ProjectGuid>
-    <RootNamespace>Project2</RootNamespace>
+    <ProjectGuid>{c0c0f164-c92a-4f48-93af-2a85ce14bda3}</ProjectGuid>
+    <RootNamespace>WindowsProject1</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -140,20 +140,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
-    <ClInclude Include="Project2.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="WindowsProject1.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Project2.cpp" />
+    <ClCompile Include="WindowsProject1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Project2.rc" />
+    <ResourceCompile Include="WindowsProject1.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="floatingimage.bmp" />
-    <Image Include="Project2.ico" />
     <Image Include="small.ico" />
+    <Image Include="WindowsProject1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

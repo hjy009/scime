@@ -3,7 +3,7 @@
   <ItemGroup>
     <Filter Include="源文件">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="头文件">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
@@ -24,17 +24,17 @@
     <ClInclude Include="Resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Project2.h">
+    <ClInclude Include="WindowsProject1.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Project2.cpp">
+    <ClCompile Include="WindowsProject1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Project2.rc">
+    <ResourceCompile Include="WindowsProject1.rc">
       <Filter>资源文件</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -42,10 +42,7 @@
     <Image Include="small.ico">
       <Filter>资源文件</Filter>
     </Image>
-    <Image Include="Project2.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="floatingimage.bmp">
+    <Image Include="WindowsProject1.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
