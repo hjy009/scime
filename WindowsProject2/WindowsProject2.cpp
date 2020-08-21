@@ -6,10 +6,48 @@
 
 #define MAX_LOADSTRING 100
 
+/*
+ * Cust Window Styles
+ */
+#define WS_CustWINDOW (WS_OVERLAPPED    )
+
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
+
+HWND hwnd;
+HDC hdc;          // handle to device context (DC)  
+//PAINTSTRUCT ps;   // paint data for Begin/EndPaint  
+POINT ptClientUL; // client area upper left corner  
+POINT ptClientLR; // client area lower right corner  
+static HDC hdcCompat; // handle to DC for bitmap  
+static POINT pt;      // x- and y-coordinates of cursor  
+static RECT rcTarget; // rect to receive filled shape  
+static RECT rcClient; // client area rectangle  
+static BOOL fSizeEllipse; // TRUE if ellipse is sized  
+static BOOL fDrawEllipse;   // TRUE if ellipse is drawn  
+static BOOL fDrawRectangle; // TRUE if rectangle is drawn  
+static BOOL fSizeRectangle; // TRUE if rectangle is sized  
+static BOOL fSizeRoundRect; // TRUE if rounded rect is sized  
+static BOOL fDrawRoundRect; // TRUE if rounded rect is drawn  
+static int nEllipseWidth;   // width for round corners  
+static int nEllipseHeight;  // height for round corners  
+
+static RECT clientRect;
+static RECT textRect;
+static HRGN bgRgn;
+static HBRUSH hBrush;
+static HPEN hPen;
+
+//设置窗口透明色
+static COLORREF m_clrWndTransparencyColorKey = RGB(147, 147, 148);
+//缺省的不透明色
+static COLORREF m_clrWndNoTransparencyColorKey = RGB(255, 0, 19);
+
+
+static int divx =4;
+static int divy = 3;
 
 // 此代码模块中包含的函数的前向声明:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -97,18 +135,78 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 将实例句柄存储在全局变量中
 
+   /*
+   //ModifyStyleEx(WS_EX_CLIENTEDGE, NULL);
+
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   */
+   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_CustWINDOW,
+       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
       return FALSE;
    }
 
+   //nCmdShow = SW_SHOWMAXIMIZED;
+
+
+   ////////////////////////////////////////////////////////////////////////////
+   //设置窗口的扩展样式：WS_EX_LAYERED,以形成透明窗口风格。
+   // Set WS_EX_LAYERED on this window 
+   /*
+   SetWindowLong(hWnd,
+       GWL_EXSTYLE,
+       GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+   */
+   //设置窗口：用透明色来实现透明窗口。（还可以通过透明度来设置透明窗口：LWA_ALPHA）
+   // Make this window 70% alpha
+   //SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA);
+   //SetLayeredWindowAttributes(hWnd, 0, 150, LWA_ALPHA);
+   /*
+   // Make this window 70% alpha
+   SetLayeredWindowAttributes(hWnd,
+       m_clrWndTransparencyColorKey,
+       255,
+       LWA_COLORKEY);
+   */
+
+   ////////////////////////////////////////////////////////////////////////////
+
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
    return TRUE;
+}
+
+void drawgrid(RECT rect)
+{
+    int width, hight;
+    width = rect.right - rect.left;
+    hight = rect.bottom - rect.top;
+    for (int i = 1; i < divx; i++) {
+        pt.x = rect.left + width / divx * i;
+        pt.y = rect.top;
+        MoveToEx(hdc, pt.x, pt.y , NULL);
+        pt.x = rect.left + width / divx * i;
+        pt.y = rect.bottom;
+        LineTo(hdc, pt.x, pt.y);
+    }
+    for (int i = 1; i < divy; i++) {
+        pt.x = rect.left;
+        pt.y = rect.top + hight / divy * i;
+        MoveToEx(hdc, pt.x , pt.y, NULL);
+        pt.x = rect.right;
+        pt.y = rect.top + hight / divy * i;
+        LineTo(hdc, pt.x, pt.y);
+    }
+
+}
+
+void drawx(RECT rect)
+{
+    drawgrid(rect);
 }
 
 //
@@ -145,9 +243,80 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
+            //HDC hdc = BeginPaint(hWnd, &ps);
+            hdc = BeginPaint(hWnd, &ps);
             // TODO: 在此处添加使用 hdc 的任何绘图代码...
+
+        // Fill the client area with a brush
+            GetClientRect(hWnd, &clientRect);
+            bgRgn = CreateRectRgnIndirect(&clientRect);
+            hBrush = CreateSolidBrush(RGB(255, 255, 255));
+            FillRgn(hdc, bgRgn, hBrush);
+
+            hPen = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
+            SelectObject(hdc, hPen);
+            SetBkColor(hdc, RGB(0, 0, 0));
+//            Rectangle(hdc, 10, 10, 200, 200);
+
+            drawgrid(clientRect);
+
+            DeleteObject(hPen);
+            hPen = CreatePen(PS_DOT, 1, RGB(0, 255, 0));
+            SelectObject(hdc, hPen);
+            SetBkColor(hdc, RGB(0, 0, 0));
+
+            for (int i = 0; i < divx; i++) {
+                for (int j = 0; j < divy; j++) {
+                    rcTarget.left = clientRect.right / divx * i;
+                    rcTarget.right = clientRect.right / divx * (i+1);
+                    rcTarget.top = clientRect.bottom / divy * j;
+                    rcTarget.bottom = clientRect.bottom / divy * (j+1);
+                    drawx(rcTarget);
+                }
+            }
+
+
+
+
+            // Clean up
+            DeleteObject(bgRgn);
+            DeleteObject(hBrush);
+            DeleteObject(hPen);
+
+            GetStockObject(WHITE_BRUSH);
+            GetStockObject(DC_PEN);
+
+
             EndPaint(hWnd, &ps);
+        }
+        break;
+    case WM_SIZE:
+
+        // Convert the client coordinates of the client area  
+        // rectangle to screen coordinates and save them in a  
+        // rectangle. The rectangle is passed to the ClipCursor  
+        // function during WM_LBUTTONDOWN processing.  
+
+        GetClientRect(hWnd, &rcClient);
+        ptClientUL.x = rcClient.left;
+        ptClientUL.y = rcClient.top;
+        ptClientLR.x = rcClient.right;
+        ptClientLR.y = rcClient.bottom;
+        ClientToScreen(hWnd, &ptClientUL);
+        ClientToScreen(hWnd, &ptClientLR);
+        SetRect(&rcClient, ptClientUL.x, ptClientUL.y,
+            ptClientLR.x, ptClientLR.y);
+        return 0;
+    case WM_KEYDOWN:
+        if (wParam == VK_ESCAPE)
+        {
+            DestroyWindow(hWnd);
+        }
+
+        
+        if (wParam == L'J')
+        {
+            SetCursorPos(100, 100);
         }
         break;
     case WM_DESTROY:
