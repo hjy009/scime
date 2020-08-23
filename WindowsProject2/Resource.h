@@ -11,6 +11,8 @@
 #define IDI_WINDOWSPROJECT2             107
 #define IDI_SMALL                       108
 #define IDC_WINDOWSPROJECT2             109
+#define IDC_WINDOWSPROJECT2a            109
+#define IDC_WINDOWSPROJECTa2a           109
 #define IDR_MENU_CONTEXT                115
 #define IDR_MAINFRAME                   128
 #define ID_OPERATION_CLOSE              40010

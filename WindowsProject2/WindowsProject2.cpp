@@ -9,7 +9,10 @@
 /*
  * Cust Window Styles
  */
-#define WS_CustWINDOW (WS_OVERLAPPED    )
+#define WS_BORDERLESS (WS_POPUP     | \
+                             WS_SYSMENU        | \
+                             WS_MINIMIZEBOX    | \
+                             WS_MAXIMIZEBOX)
 
 // 全局变量:
 HINSTANCE hInst;                                // 当前实例
@@ -115,6 +118,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
     wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WINDOWSPROJECT2);
+    //wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WINDOWSPROJECT2);
+    wcex.lpszMenuName   = NULL;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -135,16 +140,20 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 将实例句柄存储在全局变量中
 
-   /*
+
+   //hwnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+     // CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   
+   hwnd = CreateWindowW(szWindowClass, szTitle, WS_POPUP,
+       CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, nullptr, nullptr, hInstance, nullptr);
+
+   
    //ModifyStyleEx(WS_EX_CLIENTEDGE, NULL);
+   //WS_VISIBLE | WS_POPUP | WS_OVERLAPPED
+   //WS_OVERLAPPEDWINDOW | (WS_CAPTION | WS_THICKFRAME)
+   //SetWindowLong(hwnd, GWL_STYLE, WS_CAPTION | WS_THICKFRAME | WS_OVERLAPPEDWINDOW);
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-   */
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_CustWINDOW,
-       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
+   if (!hwnd)
    {
       return FALSE;
    }
@@ -174,10 +183,29 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ////////////////////////////////////////////////////////////////////////////
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   ShowWindow(hwnd, nCmdShow);
+   UpdateWindow(hwnd);
 
    return TRUE;
+}
+
+void set_borderless(bool enabled) {
+    //Style new_style = (enabled) ? select_borderless_style() : Style::windowed;
+    //Style old_style = static_cast<Style>(::GetWindowLongPtrW(handle.get(), GWL_STYLE));
+
+    //if (new_style != old_style) {
+        //borderless = enabled;
+
+        //SetWindowLongPtrW(hwnd, GWL_STYLE, Style::windowed);
+        SetWindowLongPtrW(hwnd, GWL_STYLE, WS_BORDERLESS);
+
+        // when switching between borderless and windowed, restore appropriate shadow state
+        //set_shadow(handle.get(), borderless_shadow && (new_style != Style::windowed));
+
+        // redraw frame
+        SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+        ShowWindow(hwnd, SW_SHOW);
+    //}
 }
 
 void drawgrid(RECT rect)
@@ -224,72 +252,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_COMMAND:
+    {
+        int wmId = LOWORD(wParam);
+        // 分析菜单选择:
+        switch (wmId)
         {
-            int wmId = LOWORD(wParam);
-            // 分析菜单选择:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
+        case IDM_ABOUT:
+            DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+            break;
+        case IDM_EXIT:
+            DestroyWindow(hWnd);
+            break;
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
         }
-        break;
+    }
+    break;
     case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            //HDC hdc = BeginPaint(hWnd, &ps);
-            hdc = BeginPaint(hWnd, &ps);
-            // TODO: 在此处添加使用 hdc 的任何绘图代码...
+    {
+        PAINTSTRUCT ps;
+        //HDC hdc = BeginPaint(hWnd, &ps);
+        hdc = BeginPaint(hWnd, &ps);
+        // TODO: 在此处添加使用 hdc 的任何绘图代码...
 
-        // Fill the client area with a brush
-            GetClientRect(hWnd, &clientRect);
-            bgRgn = CreateRectRgnIndirect(&clientRect);
-            hBrush = CreateSolidBrush(RGB(255, 255, 255));
-            FillRgn(hdc, bgRgn, hBrush);
+    // Fill the client area with a brush
+        GetClientRect(hWnd, &clientRect);
+        bgRgn = CreateRectRgnIndirect(&clientRect);
+        hBrush = CreateSolidBrush(RGB(255, 255, 255));
+        FillRgn(hdc, bgRgn, hBrush);
 
-            hPen = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
-            SelectObject(hdc, hPen);
-            SetBkColor(hdc, RGB(0, 0, 0));
-//            Rectangle(hdc, 10, 10, 200, 200);
+        hPen = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
+        SelectObject(hdc, hPen);
+        SetBkColor(hdc, RGB(0, 0, 0));
+        //            Rectangle(hdc, 10, 10, 200, 200);
 
-            drawgrid(clientRect);
+        drawgrid(clientRect);
 
-            DeleteObject(hPen);
-            hPen = CreatePen(PS_DOT, 1, RGB(0, 255, 0));
-            SelectObject(hdc, hPen);
-            SetBkColor(hdc, RGB(0, 0, 0));
+        DeleteObject(hPen);
+        hPen = CreatePen(PS_DOT, 1, RGB(0, 255, 0));
+        SelectObject(hdc, hPen);
+        SetBkColor(hdc, RGB(0, 0, 0));
 
-            for (int i = 0; i < divx; i++) {
-                for (int j = 0; j < divy; j++) {
-                    rcTarget.left = clientRect.right / divx * i;
-                    rcTarget.right = clientRect.right / divx * (i+1);
-                    rcTarget.top = clientRect.bottom / divy * j;
-                    rcTarget.bottom = clientRect.bottom / divy * (j+1);
-                    drawx(rcTarget);
-                }
+        for (int i = 0; i < divx; i++) {
+            for (int j = 0; j < divy; j++) {
+                rcTarget.left = clientRect.right / divx * i;
+                rcTarget.right = clientRect.right / divx * (i + 1);
+                rcTarget.top = clientRect.bottom / divy * j;
+                rcTarget.bottom = clientRect.bottom / divy * (j + 1);
+                drawx(rcTarget);
             }
-
-
-
-
-            // Clean up
-            DeleteObject(bgRgn);
-            DeleteObject(hBrush);
-            DeleteObject(hPen);
-
-            GetStockObject(WHITE_BRUSH);
-            GetStockObject(DC_PEN);
-
-
-            EndPaint(hWnd, &ps);
         }
-        break;
+
+
+
+
+        // Clean up
+        DeleteObject(bgRgn);
+        DeleteObject(hBrush);
+        DeleteObject(hPen);
+
+        GetStockObject(WHITE_BRUSH);
+        GetStockObject(DC_PEN);
+
+
+        EndPaint(hWnd, &ps);
+    }
+    break;
     case WM_SIZE:
 
         // Convert the client coordinates of the client area  
@@ -307,18 +335,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetRect(&rcClient, ptClientUL.x, ptClientUL.y,
             ptClientLR.x, ptClientLR.y);
         return 0;
-    case WM_KEYDOWN:
-        if (wParam == VK_ESCAPE)
-        {
+    case WM_KEYDOWN:{
+        switch (wParam) {
+        case VK_ESCAPE:
             DestroyWindow(hWnd);
-        }
-
-        
-        if (wParam == L'J')
-        {
+        case L'J':
             SetCursorPos(100, 100);
+        case L'K':
+            SetCursorPos(200, 200);
+        case L'L':
+            set_borderless(true);
         }
         break;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
