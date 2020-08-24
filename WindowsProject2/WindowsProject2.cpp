@@ -10,6 +10,7 @@
  * Cust Window Styles
  */
 #define WS_BORDERLESS (WS_POPUP     | \
+                             WS_MAXIMIZE       | \
                              WS_SYSMENU        | \
                              WS_MINIMIZEBOX    | \
                              WS_MAXIMIZEBOX)
@@ -116,6 +117,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hInstance      = hInstance;
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSPROJECT2));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
     wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WINDOWSPROJECT2);
     //wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WINDOWSPROJECT2);
@@ -144,43 +146,36 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    //hwnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
      // CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
    
-   hwnd = CreateWindowW(szWindowClass, szTitle, WS_POPUP,
-       CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, nullptr, nullptr, hInstance, nullptr);
-
-   
-   //ModifyStyleEx(WS_EX_CLIENTEDGE, NULL);
-   //WS_VISIBLE | WS_POPUP | WS_OVERLAPPED
-   //WS_OVERLAPPEDWINDOW | (WS_CAPTION | WS_THICKFRAME)
-   //SetWindowLong(hwnd, GWL_STYLE, WS_CAPTION | WS_THICKFRAME | WS_OVERLAPPEDWINDOW);
+   UINT width = GetSystemMetrics(SM_CXSCREEN);
+   UINT height = GetSystemMetrics(SM_CYSCREEN);
+   //WS_BORDERLESS
+   hwnd = CreateWindowW(szWindowClass, szTitle, WS_BORDERLESS,
+       CW_USEDEFAULT, 0, width, height, nullptr, nullptr, hInstance, nullptr);
 
    if (!hwnd)
    {
       return FALSE;
    }
 
-   //nCmdShow = SW_SHOWMAXIMIZED;
-
-
    ////////////////////////////////////////////////////////////////////////////
    //设置窗口的扩展样式：WS_EX_LAYERED,以形成透明窗口风格。
    // Set WS_EX_LAYERED on this window 
-   /*
-   SetWindowLong(hWnd,
+   
+   SetWindowLong(hwnd,
        GWL_EXSTYLE,
-       GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-   */
+       GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+   
    //设置窗口：用透明色来实现透明窗口。（还可以通过透明度来设置透明窗口：LWA_ALPHA）
    // Make this window 70% alpha
-   //SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA);
-   //SetLayeredWindowAttributes(hWnd, 0, 150, LWA_ALPHA);
-   /*
+   //SetLayeredWindowAttributes(hwnd, 0, (255 * 70) / 100, LWA_ALPHA);
+   //SetLayeredWindowAttributes(hwnd, 0, 1, LWA_ALPHA);
+   
    // Make this window 70% alpha
-   SetLayeredWindowAttributes(hWnd,
+   SetLayeredWindowAttributes(hwnd,
        m_clrWndTransparencyColorKey,
        255,
        LWA_COLORKEY);
-   */
-
+   
    ////////////////////////////////////////////////////////////////////////////
 
    ShowWindow(hwnd, nCmdShow);
@@ -275,10 +270,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         hdc = BeginPaint(hWnd, &ps);
         // TODO: 在此处添加使用 hdc 的任何绘图代码...
 
-    // Fill the client area with a brush
+        ////////////////////////////////////////////////////////////////////////////
+        // Fill the client area with a brush
         GetClientRect(hWnd, &clientRect);
         bgRgn = CreateRectRgnIndirect(&clientRect);
-        hBrush = CreateSolidBrush(RGB(255, 255, 255));
+        
+        hBrush = CreateSolidBrush(m_clrWndTransparencyColorKey);
+        //hBrush = CreateSolidBrush(RGB(255, 255, 255));
         FillRgn(hdc, bgRgn, hBrush);
 
         hPen = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
