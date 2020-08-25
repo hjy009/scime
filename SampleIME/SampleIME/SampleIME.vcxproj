@@ -117,14 +117,6 @@
   <ItemGroup>
     <ResourceCompile Include="SampleIME.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\IMEInstall\IMEInstall.vcxproj">
-      <Project>{840f0bae-2919-459b-af91-cb4795dcb69f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\IMETest\IMETest.vcxproj">
-      <Project>{51318c04-c87b-4d98-b923-f490783af4a1}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0C8FE010-5146-44D8-AF99-82702C15FEA5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

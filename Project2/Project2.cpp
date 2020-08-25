@@ -10,7 +10,7 @@
 HINSTANCE hInst;                                // 当前实例
 WCHAR szTitle[MAX_LOADSTRING];                  // 标题栏文本
 WCHAR szWindowClass[MAX_LOADSTRING];            // 主窗口类名
-HWND hWnd;
+HWND hwnd;
 
 
 BOOL fDraw = FALSE;
@@ -98,7 +98,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_PROJECT2));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_PROJECT2);
+    //wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_PROJECT2);
+    wcex.lpszMenuName = NULL;
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -119,14 +120,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 将实例句柄存储在全局变量中
    //HWND hWnd;
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+   hwnd = CreateWindowW(szWindowClass, szTitle, WS_POPUP,
+      CW_USEDEFAULT, 0, 1024, 768, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
+   if (!hwnd)
    {
       return FALSE;
    }
 
+   /*
    // Set WS_EX_LAYERED on this window 
    SetWindowLong(hWnd,
        GWL_EXSTYLE,
@@ -134,45 +136,27 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    // Make this window 70% alpha
    SetLayeredWindowAttributes(hWnd, 0, (255 * 70) / 100, LWA_ALPHA);
+   */
+   
+   // 区域窗口.  
+   RECT rc;
+   HRGN hrgn, hrgn1;
 
-/*
+   GetClientRect(hwnd, &rc);
+   hrgn = CreateRectRgn(100, 100,
+       200, 200);
+   hrgn1 = CreateRectRgn(300, 300,
+       400, 400);
 
-   // Load the bitmap resource.  
+   CombineRgn(hrgn, hrgn, hrgn1, RGN_OR);
 
-   hbmp = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_FLOATINGIMAGE));
+   SetWindowRgn(hwnd, hrgn,true);
 
-   // Create a device context (DC) to hold the bitmap.  
-   // The bitmap is copied from this DC to the window's DC  
-   // whenever it must be drawn.  
+   DeleteObject(hrgn1);
+   DeleteObject(hrgn);
 
-   hdc = GetDC(hWnd);
-   hdcCompat = CreateCompatibleDC(hdc);
-   SelectObject(hdcCompat, hbmp);
-
-   // Create a brush of the same color as the background  
-   // of the client area. The brush is used later to erase  
-   // the old bitmap before copying the bitmap into the  
-   // target rectangle.  
-
-   crBkgnd = GetBkColor(hdc);
-   hbrBkgnd = CreateSolidBrush(crBkgnd);
-   ReleaseDC(hWnd, hdc);
-
-   // Create a dotted pen. The pen is used to draw the  
-   // bitmap rectangle as the user drags it.  
-
-   hpenDot = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
-
-   // Set the initial rectangle for the bitmap. Note that  
-   // this application supports only a 32- by 32-pixel  
-   // bitmap. The rectangle is slightly larger than the  
-   // bitmap.  
-
-   SetRect(&rcBmp, 1, 1, 177, 137);
-*/
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   ShowWindow(hwnd, nCmdShow);
+   UpdateWindow(hwnd);
 
    return TRUE;
 }
@@ -338,6 +322,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hWnd, &ps);
         }
         break;
+    case WM_KEYDOWN: {
+        switch (wParam) {
+        case VK_ESCAPE:
+            DestroyWindow(hWnd);
+        case L'J':
+            SetCursorPos(100, 100);
+        case L'K':
+            SetCursorPos(200, 200);
+        }
+        break;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

@@ -45,9 +45,9 @@ static HBRUSH hBrush;
 static HPEN hPen;
 
 //设置窗口透明色
-static COLORREF m_clrWndTransparencyColorKey = RGB(147, 147, 148);
+static COLORREF tmshe = RGB(147, 147, 148);
 //缺省的不透明色
-static COLORREF m_clrWndNoTransparencyColorKey = RGB(255, 0, 19);
+static COLORREF btmshe = RGB(255, 0, 19);
 
 
 static int divx =4;
@@ -172,7 +172,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    
    // Make this window 70% alpha
    SetLayeredWindowAttributes(hwnd,
-       m_clrWndTransparencyColorKey,
+       tmshe,
        255,
        LWA_COLORKEY);
    
@@ -271,26 +271,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         // TODO: 在此处添加使用 hdc 的任何绘图代码...
 
         ////////////////////////////////////////////////////////////////////////////
-        // Fill the client area with a brush
+        // 填充透明背景
         GetClientRect(hWnd, &clientRect);
         bgRgn = CreateRectRgnIndirect(&clientRect);
-        
-        hBrush = CreateSolidBrush(m_clrWndTransparencyColorKey);
-        //hBrush = CreateSolidBrush(RGB(255, 255, 255));
+        hBrush = CreateSolidBrush(tmshe);
         FillRgn(hdc, bgRgn, hBrush);
-
-        hPen = CreatePen(PS_DOT, 1, RGB(0, 0, 0));
-        SelectObject(hdc, hPen);
-        SetBkColor(hdc, RGB(0, 0, 0));
-        //            Rectangle(hdc, 10, 10, 200, 200);
-
-        drawgrid(clientRect);
-
+        DeleteObject(bgRgn);
+        DeleteObject(hBrush);
         DeleteObject(hPen);
-        hPen = CreatePen(PS_DOT, 1, RGB(0, 255, 0));
+
+        //画网格
+        hPen = CreatePen(PS_DOT, 1, RGB(255, 255, 255));
         SelectObject(hdc, hPen);
         SetBkColor(hdc, RGB(0, 0, 0));
-
+        drawgrid(clientRect);
+        DeleteObject(hPen);
+        //画内网
+        hPen = CreatePen(PS_DOT, 1, RGB(100, 100, 100));
+        SelectObject(hdc, hPen);
+        SetBkColor(hdc, RGB(0, 0, 0));
         for (int i = 0; i < divx; i++) {
             for (int j = 0; j < divy; j++) {
                 rcTarget.left = clientRect.right / divx * i;
@@ -300,13 +299,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 drawx(rcTarget);
             }
         }
-
-
-
-
-        // Clean up
-        DeleteObject(bgRgn);
-        DeleteObject(hBrush);
         DeleteObject(hPen);
 
         GetStockObject(WHITE_BRUSH);
